@@ -65,6 +65,7 @@ export default function PharmaLandingPage() {
       </header>
 
       <Showcase />
+      <CustomerCard />
     </main>
   )
 }
@@ -85,9 +86,7 @@ function Showcase() {
               <Mark />
 
               <div>
-                <p className="text-sm font-semibold">
-                  PharmaResearch AI
-                </p>
+                <p className="text-sm font-semibold">PharmaResearch AI</p>
 
                 <p className="text-xs text-muted-foreground">
                   Research Chat · Drug A workspace
@@ -195,7 +194,7 @@ function CustomerCard() {
               </div>
             </div>
 
-            <div className="mt-5 flex gap-1 text-primary">
+            <div className="mt-5 flex gap-1 text-primary" aria-label="5 out of 5 stars">
               ★ ★ ★ ★ ★
             </div>
 
