@@ -1,110 +1,7 @@
-tsx
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-
-import {
-  Activity,
-  ArrowRight,
-  BookOpen,
-  Check,
-  ChevronDown,
-  FileCheck2,
-  FileText,
-  LockKeyhole,
-  Menu,
-  MessageSquareText,
-  Quote,
-  ShieldCheck,
-  Sparkles,
-  UploadCloud,
-  X,
-  Zap,
-} from 'lucide-react'
-
-const workflow = [
-  {
-    icon: UploadCloud,
-    title: 'Upload your documents',
-    text: 'Bring clinical trials, labels, and safety reports into one private workspace.',
-  },
-  {
-    icon: Zap,
-    title: 'Index the content',
-    text: 'PharmaResearch AI organizes every page and passage for fast retrieval.',
-  },
-  {
-    icon: MessageSquareText,
-    title: 'Ask questions',
-    text: 'Use natural language to investigate evidence across your library.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Verify the evidence',
-    text: 'Follow every answer back to its exact document and page.',
-  },
-]
-
-const features = [
-  {
-    icon: FileText,
-    title: 'Document Intelligence',
-    text: 'Turn dense research PDFs into a searchable evidence base.',
-    className: 'bg-lavender-mist',
-  },
-  {
-    icon: Sparkles,
-    title: 'AI Research',
-    text: 'Get concise answers that stay anchored to your source material.',
-    className: 'bg-soft-blue',
-  },
-  {
-    icon: FileCheck2,
-    title: 'Verifiable Sources',
-    text: 'See the passage, page, and document behind every response.',
-    className: 'bg-mint-background',
-  },
-  {
-    icon: BookOpen,
-    title: 'Research History',
-    text: 'Return to previous questions and keep your thinking connected.',
-    className: 'bg-warm-background',
-  },
-]
-
-const faqs = [
-  {
-    question: 'What is PharmaResearch AI?',
-    answer:
-      'PharmaResearch AI is an evidence-grounded research workspace that helps you search clinical trials, drug labels, safety reports, and other research documents using natural language.',
-  },
-  {
-    question: 'How does PharmaResearch AI keep answers reliable?',
-    answer:
-      'Every answer is grounded in the documents you provide. You can follow the response back to the relevant passage, document, and page to verify the evidence.',
-  },
-  {
-    question: 'What types of documents can I use?',
-    answer:
-      'You can bring research documents such as clinical trials, drug labels, safety reports, and other PDF-based evidence into your private workspace.',
-  },
-  {
-    question: 'Can I verify where an answer came from?',
-    answer:
-      'Yes. PharmaResearch AI provides page-level source references so you can inspect the exact evidence behind an answer.',
-  },
-  {
-    question: 'Is my research data private?',
-    answer:
-      'Your research documents are kept within your private workspace and are used to help you investigate the evidence you have uploaded.',
-  },
-  {
-    question: 'Who is PharmaResearch AI designed for?',
-    answer:
-      'It is designed for researchers and teams who need to investigate evidence quickly while maintaining a clear connection to primary sources.',
-  },
-]
+import { Activity, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react'
 
 function Mark() {
   return (
@@ -118,492 +15,11 @@ function Brand() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
       <Mark />
+
       <span className="text-sm font-semibold tracking-tight text-foreground">
         PharmaResearch <span className="text-primary">AI</span>
       </span>
     </Link>
-  )
-}
-
-function CTA({
-  children,
-  variant = 'primary',
-}: {
-  children: React.ReactNode
-  variant?: 'primary' | 'secondary'
-}) {
-  return (
-    <Link
-      href="/signup"
-      className={
-        variant === 'primary'
-          ? 'inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_28px_-14px_rgba(124,131,253,0.8)] transition-transform hover:-translate-y-0.5'
-          : 'inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40'
-      }
-    >
-      {children}
-    </Link>
-  )
-}
-
-export default function PharmaLandingPage() {
-  const [mobileOpen, setMobileOpen] = useState(false)
-
-  return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-x-0 top-0 -z-0 h-[520px] bg-[radial-gradient(circle_at_75%_5%,hsl(var(--lavender)/0.32),transparent_38%),radial-gradient(circle_at_15%_20%,hsl(var(--mint)/0.2),transparent_32%)]" />
-
-      {/* Header */}
-      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 md:px-8">
-        <Brand />
-
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
-          <a
-            href="#product"
-            className="transition-colors hover:text-foreground"
-          >
-            Product
-          </a>
-
-          <a
-            href="#how-it-works"
-            className="transition-colors hover:text-foreground"
-          >
-            How It Works
-          </a>
-
-          <a
-            href="#features"
-            className="transition-colors hover:text-foreground"
-          >
-            Features
-          </a>
-
-          <a
-            href="#security"
-            className="transition-colors hover:text-foreground"
-          >
-            Security
-          </a>
-
-          <a
-            href="#faq"
-            className="transition-colors hover:text-foreground"
-          >
-            FAQ
-          </a>
-        </nav>
-
-        {/* Desktop Actions */}
-        <div className="hidden items-center gap-3 sm:flex">
-          <Link
-            href="/login"
-            className="rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            Sign In
-          </Link>
-
-          <CTA>
-            Get Started
-            <ArrowRight className="size-4" />
-          </CTA>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          type="button"
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileOpen}
-          className="rounded-xl border border-border bg-card p-2.5 lg:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? (
-            <X className="size-4" />
-          ) : (
-            <Menu className="size-4" />
-          )}
-        </button>
-      </header>
-
-      {/* Mobile Navigation */}
-      {mobileOpen && (
-        <nav className="relative z-10 mx-5 flex flex-col gap-1 rounded-2xl border border-border bg-card p-3 shadow-lg lg:hidden">
-          <a
-            href="#product"
-            onClick={() => setMobileOpen(false)}
-            className="rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            Product
-          </a>
-
-          <a
-            href="#how-it-works"
-            onClick={() => setMobileOpen(false)}
-            className="rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            How It Works
-          </a>
-
-          <a
-            href="#features"
-            onClick={() => setMobileOpen(false)}
-            className="rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            Features
-          </a>
-
-          <a
-            href="#security"
-            onClick={() => setMobileOpen(false)}
-            className="rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            Security
-          </a>
-
-          <a
-            href="#faq"
-            onClick={() => setMobileOpen(false)}
-            className="rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            FAQ
-          </a>
-
-          <div className="mt-2 flex items-center gap-3">
-            <Link
-              href="/login"
-              className="flex-1 rounded-xl bg-secondary px-3 py-2.5 text-center text-sm font-semibold"
-            >
-              Sign In
-            </Link>
-
-            <div className="flex-1">
-              <CTA>Get Started</CTA>
-            </div>
-          </div>
-        </nav>
-      )}
-
-      {/* Hero / Product */}
-      <section
-        id="product"
-        className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12"
-      >
-        <div className="relative z-10">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-card/80 px-3 py-1.5 text-xs font-medium text-primary shadow-sm">
-            <span className="size-1.5 rounded-full bg-mint" />
-            Evidence-grounded research, reimagined
-          </div>
-
-          <h1 className="max-w-2xl text-balance text-5xl font-semibold leading-[1.04] tracking-[-0.045em] md:text-7xl">
-            Research faster.
-            <br />
-            <span className="text-primary">Verify every answer.</span>
-          </h1>
-
-          <p className="mt-7 max-w-xl text-pretty text-base leading-7 text-muted-foreground md:text-lg">
-            Ask questions across clinical trials, drug labels, and safety
-            documents. Get concise answers grounded in the exact evidence.
-          </p>
-
-          <div className="mt-9 flex flex-wrap gap-3">
-            <CTA>
-              Start Researching
-              <ArrowRight className="size-4" />
-            </CTA>
-
-            <a
-              href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5"
-            >
-              See How It Works
-              <ChevronDown className="size-4" />
-            </a>
-          </div>
-
-          <div className="mt-9 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="flex -space-x-2">
-              <span className="grid size-7 place-items-center rounded-full border-2 border-background bg-lavender text-[10px] font-semibold">
-                DR
-              </span>
-              <span className="grid size-7 place-items-center rounded-full border-2 border-background bg-mint text-[10px] font-semibold">
-                MK
-              </span>
-              <span className="grid size-7 place-items-center rounded-full border-2 border-background bg-peach text-[10px] font-semibold">
-                AL
-              </span>
-            </div>
-
-            <span>
-              Trusted by research teams who need answers they can defend.
-            </span>
-          </div>
-        </div>
-
-        <ProductPreview />
-      </section>
-
-      {/* Trust */}
-      <section className="mx-auto grid max-w-7xl gap-3 px-5 pb-20 sm:grid-cols-3 md:px-8">
-        <Trust
-          icon={ShieldCheck}
-          title="Evidence-Grounded Answers"
-        />
-
-        <Trust
-          icon={Quote}
-          title="Page-Level Citations"
-        />
-
-        <Trust
-          icon={LockKeyhole}
-          title="Research-First Workflow"
-        />
-      </section>
-
-      {/* How It Works */}
-      <section
-        id="how-it-works"
-        className="border-y border-border/70 bg-card/45"
-      >
-        <div className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">
-          <SectionIntro
-            eyebrow="How it works"
-            title="From document to defensible insight."
-            text="A focused workflow for the moments when accuracy matters more than volume."
-          />
-
-          <div className="mt-14 grid gap-4 md:grid-cols-4">
-            {workflow.map(({ icon: Icon, title, text }, index) => (
-              <div
-                key={title}
-                className="relative rounded-3xl border border-border bg-card p-5 shadow-sm transition-transform hover:-translate-y-1"
-              >
-                <div className="mb-12 flex items-center justify-between">
-                  <div className="grid size-11 place-items-center rounded-2xl bg-lavender-mist text-primary">
-                    <Icon className="size-5" />
-                  </div>
-
-                  <span className="font-mono text-xs text-muted-foreground">
-                    0{index + 1}
-                  </span>
-                </div>
-
-                <h3 className="text-base font-semibold">{title}</h3>
-
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {text}
-                </p>
-
-                {index < 3 && (
-                  <ArrowRight className="absolute -right-3 top-10 z-10 hidden size-5 text-primary md:block" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section
-        id="features"
-        className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28"
-      >
-        <SectionIntro
-          eyebrow="One workspace, less friction"
-          title="Everything your evidence deserves."
-          text="Designed for researchers who want the speed of AI without giving up the rigor of primary sources."
-        />
-
-        <div className="mt-14 grid gap-4 md:grid-cols-2">
-          <div className="rounded-3xl border border-border bg-primary p-7 text-primary-foreground shadow-[0_22px_55px_-28px_rgba(124,131,253,0.8)] md:col-span-2 md:min-h-72">
-            <div className="flex h-full flex-col justify-between gap-10 md:flex-row">
-              <div className="max-w-md">
-                <FileText className="size-6" />
-
-                <h3 className="mt-12 text-2xl font-semibold">
-                  Research documents, finally working for you.
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-primary-foreground/75">
-                  Search across hundreds of pages as naturally as you think.
-                  Preserve context while you move from broad question to
-                  precise passage.
-                </p>
-              </div>
-
-              <div className="flex items-end">
-                <div className="rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 p-4 backdrop-blur-sm">
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-primary-foreground/65">
-                    Indexed collection
-                  </p>
-
-                  <p className="mt-3 text-4xl font-semibold">
-                    12{' '}
-                    <span className="text-sm font-normal text-primary-foreground/70">
-                      documents
-                    </span>
-                  </p>
-
-                  <div className="mt-4 flex gap-2">
-                    <span className="rounded-lg bg-mint px-2 py-1 text-[10px] text-foreground">
-                      Clinical
-                    </span>
-
-                    <span className="rounded-lg bg-peach px-2 py-1 text-[10px] text-foreground">
-                      Safety
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {features.slice(1).map(
-            ({ icon: Icon, title, text, className }) => (
-              <div
-                key={title}
-                className={`rounded-3xl border border-border p-6 transition-transform hover:-translate-y-1 ${className}`}
-              >
-                <div className="grid size-11 place-items-center rounded-2xl bg-card text-primary shadow-sm">
-                  <Icon className="size-5" />
-                </div>
-
-                <h3 className="mt-12 text-lg font-semibold">{title}</h3>
-
-                <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-                  {text}
-                </p>
-              </div>
-            ),
-          )}
-
-          <div className="rounded-3xl border border-border bg-warm-background p-6 transition-transform hover:-translate-y-1">
-            <div className="grid size-11 place-items-center rounded-2xl bg-card text-primary shadow-sm">
-              <BookOpen className="size-5" />
-            </div>
-
-            <h3 className="mt-12 text-lg font-semibold">
-              Research History
-            </h3>
-
-            <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-              Return to previous questions and keep your thinking connected.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Evidence */}
-      <EvidenceSection />
-
-      {/* Showcase */}
-      <Showcase />
-
-      {/* FAQ */}
-      <section
-        id="faq"
-        className="border-y border-border/70 bg-card/45"
-      >
-        <div className="mx-auto max-w-4xl px-5 py-20 md:px-8 md:py-28">
-          <SectionIntro
-            eyebrow="Frequently asked questions"
-            title="Questions, answered clearly."
-            text="Everything you need to know about researching with PharmaResearch AI."
-          />
-
-          <div className="mt-12 divide-y divide-border rounded-3xl border border-border bg-card shadow-sm">
-            {faqs.map(({ question, answer }) => (
-              <details
-                key={question}
-                className="group"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 px-6 py-5 text-left text-sm font-semibold marker:hidden md:px-7">
-                  <span>{question}</span>
-
-                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-secondary text-muted-foreground transition-transform duration-200 group-open:rotate-180">
-                    <ChevronDown className="size-4" />
-                  </span>
-                </summary>
-
-                <div className="px-6 pb-6 md:px-7">
-                  <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
-                    {answer}
-                  </p>
-                </div>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Security / CTA */}
-      <section
-        id="security"
-        className="mx-5 overflow-hidden rounded-[2rem] bg-[linear-gradient(120deg,hsl(var(--lavender-mist)),hsl(var(--soft-blue)),hsl(var(--mint-background)))] md:mx-8"
-      >
-        <div className="mx-auto max-w-7xl px-6 py-16 md:px-12 md:py-20">
-          <div className="max-w-2xl">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-              Your next answer is already there
-            </p>
-
-            <h2 className="mt-4 text-balance text-4xl font-semibold tracking-tight md:text-5xl">
-              Your research documents already contain the answers.
-            </h2>
-
-            <p className="mt-5 text-base leading-7 text-muted-foreground">
-              Find them faster with PharmaResearch AI.
-            </p>
-
-            <div className="mt-8">
-              <CTA>
-                Start Researching
-                <ArrowRight className="size-4" />
-              </CTA>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-12 md:flex-row md:items-center md:justify-between md:px-8">
-        <Brand />
-
-        <div className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-muted-foreground">
-          <a href="#product">Product</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#features">Features</a>
-          <a href="#security">Security</a>
-          <a href="#faq">FAQ</a>
-          <a href="#">Privacy</a>
-          <a href="mailto:hello@pharmaresearch.ai">Contact</a>
-        </div>
-
-        <p className="text-xs text-muted-foreground">
-          © 2026 PharmaResearch AI
-        </p>
-      </footer>
-    </main>
-  )
-}
-
-function Trust({
-  icon: Icon,
-  title,
-}: {
-  icon: typeof ShieldCheck
-  title: string
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-4 shadow-sm">
-      <div className="grid size-9 place-items-center rounded-xl bg-mint-background text-primary">
-        <Icon className="size-4" />
-      </div>
-
-      <span className="text-sm font-medium">{title}</span>
-    </div>
   )
 }
 
@@ -633,139 +49,24 @@ function SectionIntro({
   )
 }
 
-function ProductPreview() {
+export default function PharmaLandingPage() {
   return (
-    <div className="relative mx-auto w-full max-w-xl">
-      <div className="absolute -right-5 top-8 size-36 rounded-full bg-peach/50 blur-3xl" />
+    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+      <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 md:px-8">
+        <Brand />
 
-      <div className="absolute -bottom-8 left-5 size-40 rounded-full bg-mint/40 blur-3xl" />
+        <Link
+          href="/signup"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_28px_-14px_rgba(124,131,253,0.8)] transition-transform hover:-translate-y-0.5"
+        >
+          Get Started
+          <ArrowRight className="size-4" />
+        </Link>
+      </header>
 
-      <div className="relative rotate-1 rounded-[2rem] border border-border bg-card p-3 shadow-[0_28px_70px_-30px_rgba(32,35,58,0.32)]">
-        <div className="rounded-[1.35rem] bg-lavender-mist p-4 md:p-5">
-          <div className="flex items-center justify-between border-b border-border/70 pb-4">
-            <div className="flex items-center gap-2">
-              <Mark />
-
-              <div>
-                <p className="text-xs font-semibold">Research Chat</p>
-                <p className="text-[10px] text-muted-foreground">
-                  3 documents in context
-                </p>
-              </div>
-            </div>
-
-            <span className="rounded-full bg-mint px-2 py-1 text-[10px] font-medium text-foreground">
-              Indexed
-            </span>
-          </div>
-
-          <div className="mt-8 flex justify-end">
-            <div className="max-w-[75%] rounded-2xl rounded-br-md bg-primary px-4 py-3 text-xs leading-5 text-primary-foreground">
-              What was the primary endpoint in the Drug A trial?
-            </div>
-          </div>
-
-          <div className="mt-4 flex gap-3">
-            <div className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <Sparkles className="size-4" />
-            </div>
-
-            <div className="rounded-2xl rounded-tl-md bg-card p-4 shadow-sm">
-              <p className="text-xs leading-5 text-foreground/80">
-                The primary endpoint was the change from baseline in the mean
-                symptom score at Week 12.
-              </p>
-
-              <div className="mt-4 flex items-center gap-2 rounded-xl bg-soft-blue px-3 py-2">
-                <FileCheck2 className="size-3.5 text-primary" />
-
-                <span className="truncate text-[10px] font-medium">
-                  Clinical-Trial-DrugA.pdf · Page 18
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute -bottom-5 -left-5 rounded-2xl border border-border bg-card px-4 py-3 shadow-lg">
-        <div className="flex items-center gap-2">
-          <div className="grid size-7 place-items-center rounded-lg bg-mint">
-            <Check className="size-3.5 text-foreground" />
-          </div>
-
-          <div>
-            <p className="text-[10px] font-semibold">
-              Evidence verified
-            </p>
-
-            <p className="font-mono text-[9px] text-muted-foreground">
-              96.4% similarity
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function EvidenceSection() {
-  return (
-    <section className="border-y border-border/70 bg-card/45">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 md:px-8 md:py-28 lg:grid-cols-[0.8fr_1.2fr]">
-        <SectionIntro
-          eyebrow="Evidence makes AI trustworthy"
-          title="An answer is only as useful as the source behind it."
-          text="PharmaResearch AI keeps the reasoning close to the record, so your next step is clear and your conclusions are easy to defend."
-        />
-
-        <div className="rounded-3xl border border-border bg-card p-4 shadow-sm md:p-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl bg-lavender-mist p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold">
-                <Sparkles className="size-4 text-primary" />
-                AI answer
-              </div>
-
-              <p className="mt-5 text-sm leading-6">
-                Drug A showed a statistically significant improvement at Week
-                12 compared with placebo.
-              </p>
-
-              <div className="mt-5 rounded-xl bg-card p-3">
-                <p className="text-[10px] font-medium text-primary">
-                  Supported by 3 passages
-                </p>
-
-                <div className="mt-2 h-1.5 rounded-full bg-secondary">
-                  <div className="h-full w-[96%] rounded-full bg-primary" />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-border p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold">
-                <FileText className="size-4 text-primary" />
-                Source passage
-              </div>
-
-              <p className="mt-5 border-l-2 border-primary pl-3 text-sm leading-6 text-foreground/75">
-                “The least-squares mean difference favored Drug A by 4.8
-                points at Week 12.”
-              </p>
-
-              <div className="mt-5 flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>Clinical-Trial-DrugA.pdf</span>
-
-                <span className="rounded-md bg-soft-blue px-2 py-1 font-mono text-primary">
-                  Page 18
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      <Showcase />
+      <CustomerCard />
+    </main>
   )
 }
 
@@ -785,9 +86,7 @@ function Showcase() {
               <Mark />
 
               <div>
-                <p className="text-sm font-semibold">
-                  PharmaResearch AI
-                </p>
+                <p className="text-sm font-semibold">PharmaResearch AI</p>
 
                 <p className="text-xs text-muted-foreground">
                   Research Chat · Drug A workspace
@@ -845,10 +144,74 @@ function Showcase() {
                 points.”
               </p>
 
-              <button className="mt-5 flex items-center gap-1 text-xs font-semibold text-primary">
+              <Link
+                href="/sources"
+                className="mt-5 flex items-center gap-1 text-xs font-semibold text-primary"
+              >
                 Open source
                 <ArrowRight className="size-3" />
-              </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CustomerCard() {
+  return (
+    <section className="mx-auto max-w-7xl px-5 pb-20 md:px-8 md:pb-28">
+      <div className="rounded-[2rem] border border-border bg-card p-6 shadow-sm md:p-10">
+        <div className="grid gap-8 md:grid-cols-[1fr_1.5fr] md:items-center">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+              Built for researchers
+            </p>
+
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+              Trusted by teams who value reliable evidence.
+            </h2>
+
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Make research easier to understand, verify, and share with your
+              team.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-border bg-background p-6">
+            <div className="flex items-center gap-4">
+              <div className="grid size-14 place-items-center rounded-full bg-lavender-mist text-lg font-semibold text-primary">
+                DR
+              </div>
+
+              <div>
+                <h3 className="font-semibold">Dr. Rachel Morgan</h3>
+
+                <p className="text-xs text-muted-foreground">
+                  Clinical Research Lead
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex gap-1 text-primary" aria-label="5 out of 5 stars">
+              ★ ★ ★ ★ ★
+            </div>
+
+            <p className="mt-4 text-sm leading-7 text-foreground/80">
+              “PharmaResearch AI helps our team move from lengthy documents to
+              clear, evidence-backed answers without losing the original
+              source.”
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full bg-mint-background px-3 py-1 text-xs font-medium text-primary">
+                Faster research
+              </span>
+
+              <span className="rounded-full bg-soft-blue px-3 py-1 text-xs font-medium text-primary">
+                Verified sources
+              </span>
             </div>
           </div>
         </div>
