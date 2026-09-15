@@ -159,3 +159,64 @@ function Showcase() {
     </section>
   )
 }
+
+function CustomerCard() {
+  return (
+    <section className="mx-auto max-w-7xl px-5 pb-20 md:px-8 md:pb-28">
+      <div className="rounded-[2rem] border border-border bg-card p-6 shadow-sm md:p-10">
+        <div className="grid gap-8 md:grid-cols-[1fr_1.5fr] md:items-center">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+              Built for researchers
+            </p>
+
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
+              Trusted by teams who value reliable evidence.
+            </h2>
+
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Make research easier to understand, verify, and share with your
+              team.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-border bg-background p-6">
+            <div className="flex items-center gap-4">
+              <div className="grid size-14 place-items-center rounded-full bg-lavender-mist text-lg font-semibold text-primary">
+                DR
+              </div>
+
+              <div>
+                <h3 className="font-semibold">Dr. Rachel Morgan</h3>
+
+                <p className="text-xs text-muted-foreground">
+                  Clinical Research Lead
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex gap-1 text-primary">
+              ★ ★ ★ ★ ★
+            </div>
+
+            <p className="mt-4 text-sm leading-7 text-foreground/80">
+              “PharmaResearch AI helps our team move from lengthy documents to
+              clear, evidence-backed answers without losing the original
+              source.”
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full bg-mint-background px-3 py-1 text-xs font-medium text-primary">
+                Faster research
+              </span>
+
+              <span className="rounded-full bg-soft-blue px-3 py-1 text-xs font-medium text-primary">
+                Verified sources
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
