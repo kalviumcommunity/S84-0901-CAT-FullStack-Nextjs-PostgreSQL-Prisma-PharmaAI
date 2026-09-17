@@ -1,7 +1,8 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getStoredUser, AuthUser } from '@/lib/auth'
 
 const questions = [
   {
@@ -35,7 +36,12 @@ const evidence = [
 
 export default function PharmaLandingPage() {
   const [selectedQuestion, setSelectedQuestion] = useState(0)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const current = questions[selectedQuestion]
+
+  useEffect(() => {
+    setUser(getStoredUser())
+  }, [])
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f8f5] text-[#18221f]">
@@ -47,8 +53,38 @@ export default function PharmaLandingPage() {
         <nav className="hidden items-center gap-7 text-sm text-[#52605a] md:flex" aria-label="Primary navigation">
           <Link href="/documents" className="transition-colors hover:text-[#153f35]">Document library</Link>
           <Link href="/chat" className="transition-colors hover:text-[#153f35]">Research chat</Link>
+          {user && (
+            <Link href="/dashboard" className="transition-colors hover:text-[#153f35] font-semibold text-[#153f35]">Dashboard</Link>
+          )}
         </nav>
-        <Link href="/login" className="rounded-full bg-[#153f35] px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">Sign in</Link>
+        <div className="flex items-center gap-3">
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2.5 rounded-full bg-[#153f35] px-4 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+            >
+              <span className="grid size-5 place-items-center rounded-full bg-[#d7f16f] text-[10px] font-bold text-[#153f35]">
+                {user.avatarLetter || 'R'}
+              </span>
+              <span>Dashboard ({user.name.split(' ')[0]})</span>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/login"
+                className="rounded-full border border-[#c9d2c8] bg-white px-4 py-2 text-xs font-semibold text-[#153f35] transition-colors hover:bg-[#eef3e9]"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded-full bg-[#153f35] px-4 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+              >
+                Sign up
+              </Link>
+            </div>
+          )}
+        </div>
       </header>
 
       <section className="mx-auto grid max-w-7xl gap-14 px-6 pb-20 pt-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-10 lg:pb-28 lg:pt-20">
