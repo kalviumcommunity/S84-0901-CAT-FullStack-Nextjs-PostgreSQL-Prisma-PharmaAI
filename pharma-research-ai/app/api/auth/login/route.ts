@@ -1,15 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth';
-import { findUser, hashPassword } from '@/lib/store';
-
-export async function POST(request: Request) {
-  const { email, password } = await request.json();
-  const user = findUser(email ?? '');
-  if (!user || user.passwordHash !== hashPassword(password ?? '')) return NextResponse.json({ error: 'Email or password is incorrect.' }, { status: 401 });
-  const response = NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } });
-  response.cookies.set('pharma_session', createSession(user.id), { httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/' });
-  return response;
-}import { NextResponse } from 'next/server';
+import { findUser, createUser } from '@/lib/store';
 
 export async function GET() {
   return NextResponse.json({ message: 'api/auth/login endpoint ready' });
@@ -37,16 +28,23 @@ export async function POST(request: Request) {
     const cleanEmail = email.trim().toLowerCase();
     const derivedName = cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Researcher';
 
+    // Check store or accept user
+    let storedUser = findUser(cleanEmail);
+    if (!storedUser) {
+      storedUser = createUser(derivedName, cleanEmail, password);
+    }
+
     const user = {
-      id: 'usr_' + Math.random().toString(36).substring(2, 9),
-      name: derivedName,
-      email: cleanEmail,
+      id: storedUser.id,
+      name: storedUser.name,
+      email: storedUser.email,
       role: 'Clinical Research Analyst',
-      avatarLetter: derivedName.charAt(0).toUpperCase(),
+      avatarLetter: storedUser.name.charAt(0).toUpperCase() || 'R',
       loggedInAt: new Date().toISOString(),
     };
 
     const token = 'pharma_token_' + Buffer.from(cleanEmail).toString('base64');
+    const sessionId = createSession(user.id);
 
     const response = NextResponse.json({
       success: true,
@@ -61,6 +59,15 @@ export async function POST(request: Request) {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       sameSite: 'lax',
+    });
+
+    response.cookies.set({
+      name: 'pharma_session',
+      value: sessionId,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: 'lax',
+      httpOnly: true,
     });
 
     return response;
