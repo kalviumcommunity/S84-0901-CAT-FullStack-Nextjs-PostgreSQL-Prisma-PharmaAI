@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { deleteDocument } from '@/lib/store';
 
-export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) { deleteDocument((await params).id); return NextResponse.json({ ok: true }); }import { NextResponse } from 'next/server';
-
-export async function GET() {
-  return NextResponse.json({ message: 'api/documents/[id] GET route' });
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return NextResponse.json({ id, message: 'Document details ready' });
 }
 
-export async function POST() {
-  return NextResponse.json({ message: 'api/documents/[id] POST route' });
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    deleteDocument(id);
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: 'Failed to delete document' }, { status: 500 });
+  }
 }

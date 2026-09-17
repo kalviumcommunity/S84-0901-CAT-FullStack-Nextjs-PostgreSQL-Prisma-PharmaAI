@@ -57,3 +57,8 @@ export function buildUserFromEmail(email: string, name?: string): AuthUser {
     loggedInAt: new Date().toISOString(),
   };
 }
+
+export function createSession(userId: string): string {
+  return Buffer.from(`${userId}:${Date.now()}`).toString('base64');
+}
+
