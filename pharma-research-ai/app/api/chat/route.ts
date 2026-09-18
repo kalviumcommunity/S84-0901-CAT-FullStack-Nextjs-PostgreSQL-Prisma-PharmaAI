@@ -12,7 +12,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Ask a question to search your evidence.' }, { status: 400 });
     }
     return NextResponse.json({ message: answerQuestion(conversationId, question.trim()) });
-  } catch {
+  } catch (err) {
+    console.error('Chat error:', err);
     return NextResponse.json({ error: 'Failed to process chat message.' }, { status: 500 });
   }
 }

@@ -1,33 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
-import { signToken, cookieName } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { findUser, hashPassword } from '@/lib/store';
+import { signToken, cookieName } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { email, password } = body
+    const body = await req.json();
+    const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
+      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
+    const cleanEmail = email.toLowerCase().trim();
+    const user = findUser(cleanEmail);
+
     if (!user) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+      // For development/demo friendliness: create default user if not found or reject
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const valid = await bcrypt.compare(password, user.passwordHash)
-    if (!valid) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    const hashed = hashPassword(password);
+    if (user.passwordHash !== hashed) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const token = await signToken({ userId: user.id, email: user.email })
+    const token = await signToken({ userId: user.id, email: user.email });
 
     const response = NextResponse.json({
       message: 'Logged in',
       user: { id: user.id, email: user.email, name: user.name },
-    })
+    });
 
     response.cookies.set(cookieName(), token, {
       httpOnly: true,
@@ -35,11 +37,11 @@ export async function POST(req: NextRequest) {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
-    })
+    });
 
-    return response
+    return response;
   } catch (err) {
-    console.error('[login]', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[login]', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
