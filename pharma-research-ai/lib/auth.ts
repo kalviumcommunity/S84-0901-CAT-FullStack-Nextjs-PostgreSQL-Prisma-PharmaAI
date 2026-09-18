@@ -58,6 +58,35 @@ export function buildUserFromEmail(email: string, name?: string): AuthUser {
   };
 }
 
+export function cookieName(): string {
+  return 'pharma_ai_auth_session';
+}
+
+export async function signToken(payload: { userId: string; email: string }): Promise<string> {
+  return Buffer.from(JSON.stringify(payload)).toString('base64');
+}
+
+export async function verifyToken(token: string): Promise<{ userId: string; email: string } | null> {
+  try {
+    const json = Buffer.from(token, 'base64').toString('utf-8');
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+export async function getSession(): Promise<{ userId: string; email: string } | null> {
+  try {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const token = cookieStore.get(cookieName())?.value;
+    if (!token) return null;
+    return verifyToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export function createSession(userId: string): string {
   return Buffer.from(`${userId}:${Date.now()}`).toString('base64');
 }
