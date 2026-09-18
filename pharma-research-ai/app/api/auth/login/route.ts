@@ -1,81 +1,45 @@
-import { NextResponse } from 'next/server';
-import { createSession } from '@/lib/auth';
-import { findUser, createUser } from '@/lib/store';
+import { NextRequest, NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
+import { signToken, cookieName } from '@/lib/auth'
 
-export async function GET() {
-  return NextResponse.json({ message: 'api/auth/login endpoint ready' });
-}
-
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const { email, password } = body;
+    const body = await req.json()
+    const { email, password } = body
 
-    if (!email || typeof email !== 'string' || !email.trim()) {
-      return NextResponse.json(
-        { error: 'Please provide a valid email address.' },
-        { status: 400 }
-      );
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
     }
 
-    if (!password || typeof password !== 'string' || !password.trim()) {
-      return NextResponse.json(
-        { error: 'Please provide a password.' },
-        { status: 400 }
-      );
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    const derivedName = cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Researcher';
-
-    // Check store or accept user
-    let storedUser = findUser(cleanEmail);
-    if (!storedUser) {
-      storedUser = createUser(derivedName, cleanEmail, password);
+    const valid = await bcrypt.compare(password, user.passwordHash)
+    if (!valid) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
-    const user = {
-      id: storedUser.id,
-      name: storedUser.name,
-      email: storedUser.email,
-      role: 'Clinical Research Analyst',
-      avatarLetter: storedUser.name.charAt(0).toUpperCase() || 'R',
-      loggedInAt: new Date().toISOString(),
-    };
-
-    const token = 'pharma_token_' + Buffer.from(cleanEmail).toString('base64');
-    const sessionId = createSession(user.id);
+    const token = await signToken({ userId: user.id, email: user.email })
 
     const response = NextResponse.json({
-      success: true,
-      message: 'Login successful',
-      user,
-      token,
-    });
+      message: 'Logged in',
+      user: { id: user.id, email: user.email, name: user.name },
+    })
 
-    response.cookies.set({
-      name: 'pharma_ai_auth_user',
-      value: JSON.stringify(user),
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
-    });
-
-    response.cookies.set({
-      name: 'pharma_session',
-      value: sessionId,
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
+    response.cookies.set(cookieName(), token, {
       httpOnly: true,
-    });
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    })
 
-    return response;
-  } catch (error) {
-    console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred during login.' },
-      { status: 500 }
-    );
+    return response
+  } catch (err) {
+    console.error('[login]', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

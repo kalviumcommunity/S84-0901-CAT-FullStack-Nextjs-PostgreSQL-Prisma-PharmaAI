@@ -1,82 +1,61 @@
-import { NextResponse } from 'next/server';
-import { createSession } from '@/lib/auth';
-import { findUser, createUser } from '@/lib/store';
+import { NextRequest, NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
+import { signToken, cookieName } from '@/lib/auth'
 
-export async function GET() {
-  return NextResponse.json({ message: 'api/auth/register endpoint ready' });
-}
-
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const { name, email, password } = body;
+    const body = await req.json()
+    const { email, password, name } = body
 
-    if (!email || typeof email !== 'string' || !email.trim()) {
+    // Validate input
+    if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Valid email is required' }, { status: 400 })
+    }
+    if (!password || typeof password !== 'string' || password.length < 8) {
       return NextResponse.json(
-        { error: 'Please provide a valid email address.' },
+        { error: 'Password must be at least 8 characters' },
         { status: 400 }
-      );
+      )
     }
 
-    if (!password || typeof password !== 'string' || !password.trim()) {
-      return NextResponse.json(
-        { error: 'Please provide a password.' },
-        { status: 400 }
-      );
+    // Check existing user
+    const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
+    if (existing) {
+      return NextResponse.json({ error: 'Email already registered' }, { status: 409 })
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanName = (typeof name === 'string' && name.trim())
-      ? name.trim()
-      : cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Researcher';
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 12)
 
-    let storedUser = findUser(cleanEmail);
-    if (!storedUser) {
-      storedUser = createUser(cleanName, cleanEmail, password);
-    }
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email: email.toLowerCase(),
+        passwordHash,
+        name: name?.trim() || null,
+      },
+    })
 
-    const user = {
-      id: storedUser.id,
-      name: storedUser.name,
-      email: storedUser.email,
-      role: 'Clinical Research Analyst',
-      avatarLetter: storedUser.name.charAt(0).toUpperCase() || 'R',
-      loggedInAt: new Date().toISOString(),
-    };
+    // Sign JWT
+    const token = await signToken({ userId: user.id, email: user.email })
 
-    const token = 'pharma_token_' + Buffer.from(cleanEmail).toString('base64');
-    const sessionId = createSession(user.id);
+    const response = NextResponse.json(
+      { message: 'Account created', user: { id: user.id, email: user.email, name: user.name } },
+      { status: 201 }
+    )
 
-    const response = NextResponse.json({
-      success: true,
-      message: 'Account created successfully',
-      user,
-      token,
-    }, { status: 201 });
-
-    response.cookies.set({
-      name: 'pharma_ai_auth_user',
-      value: JSON.stringify(user),
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
-    });
-
-    response.cookies.set({
-      name: 'pharma_session',
-      value: sessionId,
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
+    response.cookies.set(cookieName(), token, {
       httpOnly: true,
-    });
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/',
+    })
 
-    return response;
-  } catch (error) {
-    console.error('Register error:', error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred during registration.' },
-      { status: 500 }
-    );
+    return response
+  } catch (err) {
+    console.error('[register]', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
