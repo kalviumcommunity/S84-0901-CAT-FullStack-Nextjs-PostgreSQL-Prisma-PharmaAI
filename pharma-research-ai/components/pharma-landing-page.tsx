@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { getStoredUser, AuthUser } from '@/lib/auth'
 
 const questions = [
@@ -42,12 +42,11 @@ const workflow = [
 
 export default function PharmaLandingPage() {
   const [selectedQuestion, setSelectedQuestion] = useState(0)
-  const [user, setUser] = useState<AuthUser | null>(null)
+  const [user] = useState<AuthUser | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getStoredUser();
+  });
   const current = questions[selectedQuestion]
-
-  useEffect(() => {
-    setUser(getStoredUser())
-  }, [])
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f8f5] text-[#18221f]">

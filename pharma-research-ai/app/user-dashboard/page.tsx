@@ -14,25 +14,24 @@ const activity = [
 
 export default function UserDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [mounted, setMounted] = useState(false);
+  
+  const [user] = useState<AuthUser | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getStoredUser();
+  });
 
   useEffect(() => {
-    const storedUser = getStoredUser();
-    if (!storedUser) {
+    if (!user) {
       router.push('/login');
-      return;
     }
-    setUser(storedUser);
-    setMounted(true);
-  }, [router]);
+  }, [router, user]);
 
   function handleLogout() {
     clearStoredUser();
     router.push('/login');
   }
 
-  if (!mounted) return null;
+  if (!user) return null;
 
   return (
     <main className="min-h-screen bg-[#f7f8f5] px-6 py-7 text-[#18221f] lg:px-10">

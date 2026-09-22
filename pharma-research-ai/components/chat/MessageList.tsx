@@ -24,7 +24,7 @@ export function MessageList({ messages }: MessageListProps) {
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-2">Welcome to PharmaResearch AI</h3>
               <p className="mt-1 max-w-md text-slate-500 leading-relaxed">
-                Upload pharmaceutical documents and ask questions. I'll analyze the content and provide detailed answers with exact citations to the source material.
+                Upload pharmaceutical documents and ask questions. I&apos;ll analyze the content and provide detailed answers with exact citations to the source material.
               </p>
             </div>
           </div>

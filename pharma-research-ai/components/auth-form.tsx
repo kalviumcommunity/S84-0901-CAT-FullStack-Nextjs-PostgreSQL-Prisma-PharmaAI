@@ -78,7 +78,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
         // Fallback for Next.js app router if navigation is cached
         setTimeout(() => {
           if (window.location.pathname !== '/dashboard') {
-            window.location.href = '/dashboard';
+            router.push('/dashboard');
           }
         }, 300);
       }, 600);
@@ -89,7 +89,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
       setStoredUser(fallbackUser);
       setSuccessMessage(`Welcome, ${fallbackUser.name}! Opening Dashboard...`);
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }, 500);
     } finally {
       setIsLoading(false);
@@ -109,7 +109,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
     setSuccessMessage(`Signed in as ${user.name}. Entering dashboard...`);
 
     setTimeout(() => {
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
     }, 450);
   };
 
