@@ -423,6 +423,12 @@ export default function DashboardPage() {
       return;
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('PDFs must be smaller than 10 MB');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     setIsUploading(true);
     const form = new FormData();
     form.append('file', file);

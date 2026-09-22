@@ -12,8 +12,8 @@ export async function POST(request: Request) {
     if (!(file instanceof File) || file.type !== 'application/pdf') {
       return NextResponse.json({ error: 'Please upload a PDF file.' }, { status: 400 });
     }
-    if (file.size > 25 * 1024 * 1024) {
-      return NextResponse.json({ error: 'PDFs must be smaller than 25 MB.' }, { status: 400 });
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'PDFs must be smaller than 10 MB.' }, { status: 400 });
     }
     return NextResponse.json({ document: addDocument(file.name, file.size) }, { status: 201 });
   } catch {

@@ -33,6 +33,13 @@ export default function DocumentsPage() {
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError('PDFs must be smaller than 10 MB.');
+      event.target.value = '';
+      return;
+    }
+
     setBusy(true);
     setError('');
     const form = new FormData();
