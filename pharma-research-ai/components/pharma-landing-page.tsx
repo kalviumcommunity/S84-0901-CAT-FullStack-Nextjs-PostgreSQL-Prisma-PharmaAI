@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { getStoredUser, AuthUser } from '@/lib/auth'
 
 const questions = [
@@ -34,14 +34,19 @@ const evidence = [
   { label: 'Safety bulletin', value: 'Post-market surveillance update', color: 'bg-[#d1a957]' },
 ]
 
+const workflow = [
+  { number: '01', title: 'Ask', detail: 'Start with the clinical question your team needs to answer.' },
+  { number: '02', title: 'Ground', detail: 'Search across the documents your team has already reviewed.' },
+  { number: '03', title: 'Verify', detail: 'Open the cited passage before you share the conclusion.' },
+]
+
 export default function PharmaLandingPage() {
   const [selectedQuestion, setSelectedQuestion] = useState(0)
-  const [user, setUser] = useState<AuthUser | null>(null)
+  const [user] = useState<AuthUser | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getStoredUser();
+  });
   const current = questions[selectedQuestion]
-
-  useEffect(() => {
-    setUser(getStoredUser())
-  }, [])
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7f8f5] text-[#18221f]">
@@ -113,6 +118,8 @@ export default function PharmaLandingPage() {
       </section>
 
       <section className="border-y border-[#dde5db] bg-white/70 px-6 py-16 lg:px-10"><div className="mx-auto max-w-7xl"><div className="mb-9 flex flex-wrap items-end justify-between gap-5"><div><p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#537d30]">One workspace</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[#153f35]">The evidence your question needs.</h2></div><p className="max-w-sm text-sm leading-6 text-[#68756e]">Keep source documents and research conversations together so every answer is easier to verify and share.</p></div><div className="grid gap-4 md:grid-cols-3">{evidence.map((item) => <div key={item.label} className="rounded-2xl border border-[#dfe6dd] bg-[#fbfcf8] p-5"><div className={`mb-8 size-3 rounded-full ${item.color}`} /><p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#7a867f]">{item.label}</p><p className="mt-2 text-lg font-semibold text-[#153f35]">{item.value}</p></div>)}</div></div></section>
+
+      <section className="px-6 py-16 lg:px-10 lg:py-20"><div className="mx-auto max-w-7xl rounded-[2rem] bg-[#153f35] px-6 py-8 text-white sm:px-10 sm:py-10"><div className="flex flex-wrap items-start justify-between gap-8"><div><p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d7f16f]">A reviewable research loop</p><h2 className="mt-3 max-w-lg text-3xl font-semibold tracking-[-0.03em]">Move from question to confidence in three steps.</h2></div><div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-[#d7f16f]"><span className="size-2 rounded-full bg-[#d7f16f]" /> Ready to verify</div></div><div className="mt-10 grid gap-6 md:grid-cols-3">{workflow.map((item) => <div key={item.number} className="border-t border-white/15 pt-5"><span className="font-mono text-xs text-[#d7f16f]">{item.number}</span><h3 className="mt-5 text-xl font-semibold">{item.title}</h3><p className="mt-2 max-w-xs text-sm leading-6 text-[#c9d7ce]">{item.detail}</p></div>)}</div></div></section>
 
       <footer className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-xs text-[#7a867f] sm:flex-row sm:items-center sm:justify-between lg:px-10"><span>PharmaResearch AI - Built for evidence-led research</span><span>Next.js - React - PostgreSQL - Prisma</span></footer>
     </main>

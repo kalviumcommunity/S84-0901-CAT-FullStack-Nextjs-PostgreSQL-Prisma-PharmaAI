@@ -51,6 +51,7 @@ The repository already contains the application foundation and the main product 
 
 - Next.js application setup with TypeScript, Tailwind CSS, and ESLint.
 - Public homepage component and App Router entry point.
+- Public homepage research workflow showing the Ask, Ground, and Verify review loop.
 - Login page and authentication API route placeholders.
 - Dashboard, document library, document detail, and research chat routes.
 - API route structure for authentication, chat, conversations, documents, and uploads.
@@ -65,8 +66,10 @@ The dashboard and chat page files are currently minimal placeholders, so the end
 - Added a responsive evidence-led research preview showing a question, grounded answer, source document, and page reference.
 - Added clear links to the existing `/chat`, `/documents`, and `/login` routes.
 - Added document-type messaging for clinical trial reports, drug labels, and safety bulletins.
+- Added a three-step “Ask, Ground, Verify” workflow and “Ready to verify” status cue to the homepage.
 - Replaced broken text encoding artifacts in the homepage source.
 - Updated page metadata from the default Create Next App values to the PharmaResearch AI product name and description.
+- Added keyword and Open Graph metadata for clearer search and link previews.
 - Replaced the placeholder root README with this product, technology, status, and work summary.
 
 ## Run locally

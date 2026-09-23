@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PharmaResearch AI | Evidence-led research",
   description: "Ask questions about clinical research documents and keep every answer tied to its source.",
+  keywords: ["pharmaceutical research", "clinical trial evidence", "medical document search", "research assistant"],
+  openGraph: {
+    title: "PharmaResearch AI | Evidence-led research",
+    description: "Ask questions about clinical research documents and keep every answer tied to its source.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

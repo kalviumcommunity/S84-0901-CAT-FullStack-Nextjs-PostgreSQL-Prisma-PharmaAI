@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { deleteDocument } from '@/lib/store';
+import { deleteDocument, getDocument } from '@/lib/store';
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return NextResponse.json({ id, message: 'Document details ready' });
+  const document = getDocument(id);
+  if (!document) return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+  return NextResponse.json({ document });
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {

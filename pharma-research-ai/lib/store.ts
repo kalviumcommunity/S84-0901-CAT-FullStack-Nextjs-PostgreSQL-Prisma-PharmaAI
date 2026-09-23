@@ -29,6 +29,7 @@ export function createUser(name: string, email: string, password: string) {
   return user;
 }
 export function listDocuments() { return documents; }
+export function getDocument(id: string) { return documents.find((document) => document.id === id); }
 export function addDocument(name: string, size: number) {
   const id = randomUUID();
   const source: Source = { id: `${id}-source`, documentId: id, documentName: name, pageNumber: 1, passage: 'This document has been uploaded and is ready for indexing. Add an AI provider to extract and embed its PDF content.' };

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -229,8 +229,12 @@ export default function DashboardPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // User session
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [user] = useState<AuthUser | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const stored = getStoredUser();
+    if (stored) return stored;
+    return buildUserFromEmail('investigator@pharma-research.org', 'Dr. Sarah Jenkins');
+  });
 
   // Tabs & Filters
   const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'comparator' | 'documents'>('overview');
@@ -242,8 +246,17 @@ export default function DashboardPage() {
   const [confidenceSort, setConfidenceSort] = useState<'desc' | 'asc' | 'none'>('none');
 
   // Interactive Live Data
-  const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>(initialEvidenceItems);
-  const [starredIds, setStarredIds] = useState<string[]>(['ev-1', 'ev-3']);
+  const [evidenceList] = useState<EvidenceItem[]>(initialEvidenceItems);
+  const [starredIds, setStarredIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return ['ev-1', 'ev-3'];
+    try {
+      const savedBookmarks = localStorage.getItem('pharma_starred_evidence');
+      if (savedBookmarks) return JSON.parse(savedBookmarks);
+    } catch {
+      // ignore
+    }
+    return ['ev-1', 'ev-3'];
+  });
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -300,32 +313,7 @@ export default function DashboardPage() {
     }, 3200);
   };
 
-  // Initial Load
-  useEffect(() => {
-    setMounted(true);
-    const stored = getStoredUser();
-    if (stored) {
-      setUser(stored);
-    } else {
-      const demo = buildUserFromEmail('investigator@pharma-research.org', 'Dr. Sarah Jenkins');
-      setUser(demo);
-    }
-
-    // Load saved bookmarks
-    try {
-      const savedBookmarks = localStorage.getItem('pharma_starred_evidence');
-      if (savedBookmarks) {
-        setStarredIds(JSON.parse(savedBookmarks));
-      }
-    } catch {
-      // ignore
-    }
-
-    // Fetch live documents
-    fetchDocuments();
-  }, []);
-
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     try {
       const res = await fetch('/api/documents');
       if (res.ok) {
@@ -337,7 +325,14 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Failed to load documents', err);
     }
-  };
+  }, []);
+
+  // Initial Load
+  useEffect(() => {
+    // Fetch live documents
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchDocuments();
+  }, [fetchDocuments]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -352,7 +347,7 @@ export default function DashboardPage() {
     clearStoredUser();
     router.push('/login');
     setTimeout(() => {
-      window.location.href = '/login';
+      router.push('/login');
     }, 150);
   };
 
@@ -420,6 +415,12 @@ export default function DashboardPage() {
 
     if (file.type !== 'application/pdf') {
       showToast('Only PDF trial documents are supported');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('PDFs must be smaller than 10 MB');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
