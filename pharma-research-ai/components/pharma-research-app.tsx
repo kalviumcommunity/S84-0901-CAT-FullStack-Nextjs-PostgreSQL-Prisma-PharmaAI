@@ -138,3 +138,44 @@ function Sidebar({
     </>
   )
 }
+
+
+function Header({
+  setMobileOpen, active, theme, setTheme,
+}: {
+  setMobileOpen: (v: boolean) => void
+  active: string
+  theme: 'light' | 'dark'
+  setTheme: (t: 'light' | 'dark') => void
+}) {
+  const isDark = theme === 'dark'
+  const label = nav.find((n) => n.id === active)?.label ?? active
+
+  return (
+    <header className="flex h-16 items-center justify-between border-b border-border bg-background/80 px-5 backdrop-blur-xl md:px-8">
+      <div className="flex items-center gap-3">
+        <button aria-label="Open navigation" className="rounded-xl border border-border bg-card p-2.5 lg:hidden" onClick={() => setMobileOpen(true)}>
+          <Menu className="size-4" />
+        </button>
+        <div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
+          <span>Workspace</span>
+          <ChevronRight className="size-3" />
+          <span className="font-medium text-foreground">{label}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2.5">
+        <button
+          aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+          className="rounded-xl border border-border bg-card p-2.5 transition-colors hover:bg-secondary"
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+        >
+          {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+        </button>
+        <button aria-label="Notifications" className="relative rounded-xl border border-border bg-card p-2.5">
+          <Bell className="size-4" />
+        </button>
+      </div>
+    </header>
+  )
+}
+
