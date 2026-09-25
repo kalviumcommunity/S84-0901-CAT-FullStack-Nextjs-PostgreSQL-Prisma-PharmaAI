@@ -6,76 +6,18 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [vector]
+  extensions = [pgvector(map: "vector")]
 }
 
 model User {
-  id            String         @id @default(uuid())
+  id            String         @id @default(cuid())
   email         String         @unique
   passwordHash  String
+  name          String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   documents     Document[]
   conversations Conversation[]
-}
 
-model Document {
-  id             String          @id @default(uuid())
-  userId         String
-  fileName       String
-  fileUrl        String          // Path or URL to the stored PDF
-  status         DocumentStatus  @default(PENDING) // PENDING, PROCESSING, COMPLETED, FAILED
-  uploadedAt     DateTime        @default(now())
-  user           User            @relation(fields: [userId], references: [id])
-  chunks         DocumentChunk[]
-}
-
-enum DocumentStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
-model DocumentChunk {
-  id         String   @id @default(uuid())
-  documentId String
-  pageNumber Int
-  content    String
-  embedding  Unsupported("vector(768)") // Dimensionality matches the chosen embedding model
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  sources    Source[]
-}
-
-model Conversation {
-  id        String    @id @default(uuid())
-  userId    String
-  title     String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id])
-  messages  Message[]
-}
-
-model Message {
-  id             String       @id @default(uuid())
-  conversationId String
-  role           Role         // USER or AI
-  content        String
-  createdAt      DateTime     @default(now())
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sources        Source[]
-}
-
-enum Role {
-  USER
-  AI
-}
-
-model Source {
-  id              String        @id @default(uuid())
-  messageId       String
-  documentChunkId String
-  message         Message       @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  documentChunk   DocumentChunk @relation(fields: [documentChunkId], references: [id])
+  @@map("users")
 }
