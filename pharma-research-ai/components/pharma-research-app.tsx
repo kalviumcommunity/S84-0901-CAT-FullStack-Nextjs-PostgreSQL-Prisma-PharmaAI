@@ -11,6 +11,187 @@ import {
 } from 'lucide-react'
 
 
+
+// ─── Dashboard panel ──────────────────────────────────────────────────────────
+
+function Dashboard({ setActive, user }: { setActive: (id: string) => void; user: User }) {
+  const [stats, setStats] = useState({ documentCount: 0, questionCount: 0 })
+  const [recentDocs, setRecentDocs] = useState<Document[]>([])
+  const [recentQuestions, setRecentQuestions] = useState<HistoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then((r) => r.json())
+      .then((data) => {
+        setStats(data.stats ?? { documentCount: 0, questionCount: 0 })
+        setRecentDocs(data.recentDocuments ?? [])
+        setRecentQuestions(data.recentQuestions ?? [])
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const greeting = (() => {
+    const h = new Date().getHours()
+    if (h < 12) return 'Good morning'
+    if (h < 17) return 'Good afternoon'
+    return 'Good evening'
+  })()
+
+  const displayName = user.name ?? user.email.split('@')[0]
+
+  return (
+    <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 md:p-8">
+      {/* Welcome banner */}
+      <section className="relative overflow-hidden rounded-3xl bg-primary px-6 py-7 text-primary-foreground shadow-[0_18px_50px_-20px_rgba(124,131,253,0.55)] md:px-8 md:py-8">
+        <div className="relative z-10 max-w-xl">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-primary-foreground/70">
+            {new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+          <h1 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+            {greeting}, {displayName}.
+          </h1>
+          <p className="mt-3 max-w-md text-sm leading-6 text-primary-foreground/80">
+            Pick up where you left off, or bring a new piece of evidence into your workspace.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              onClick={() => setActive('documents')}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-4 py-2.5 text-sm font-semibold text-primary shadow-sm transition-transform hover:-translate-y-0.5"
+            >
+              <UploadCloud className="size-4" /> Upload document
+            </button>
+            <button
+              onClick={() => setActive('chat')}
+              className="inline-flex items-center gap-2 rounded-xl border border-primary-foreground/30 px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              Ask a question <ArrowUpRight className="size-4" />
+            </button>
+          </div>
+        </div>
+        <div className="absolute -right-6 -top-12 size-64 rounded-full border border-primary-foreground/15" />
+        <div className="absolute -bottom-24 right-24 size-72 rounded-full border border-primary-foreground/10" />
+        <Sparkles className="absolute right-10 top-9 size-7 text-primary-foreground/60" />
+      </section>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="size-6 animate-spin text-primary" />
+        </div>
+      ) : (
+        <>
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="rounded-3xl border border-border bg-mint-background p-5">
+              <FileCheck2 className="size-5 text-primary" />
+              <p className="mt-7 text-3xl font-semibold tracking-tight">{stats.documentCount}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Documents indexed</p>
+            </div>
+            <div className="rounded-3xl border border-border bg-warm-background p-5">
+              <BookOpen className="size-5 text-primary" />
+              <p className="mt-7 text-3xl font-semibold tracking-tight">{stats.questionCount}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Questions asked</p>
+            </div>
+            <div className="col-span-2 rounded-3xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Evidence health</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {stats.documentCount > 0 ? 'Your workspace is ready to research.' : 'Upload a document to get started.'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-semibold text-primary">{stats.documentCount > 0 ? '100%' : '—'}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">traceable</p>
+                </div>
+              </div>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
+                <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: stats.documentCount > 0 ? '100%' : '0%' }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Recent documents */}
+            <section className="rounded-3xl border border-border bg-card p-5 md:p-6">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Recent documents</p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-tight">Research library</h2>
+                </div>
+                <button onClick={() => setActive('documents')} className="rounded-xl bg-secondary px-3 py-2 text-xs font-medium hover:bg-lavender">
+                  View all
+                </button>
+              </div>
+              {recentDocs.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <FolderOpen className="size-8 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No documents yet. Upload your first PDF.</p>
+                  <button onClick={() => setActive('documents')} className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
+                    Upload document
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {recentDocs.map((doc, i) => (
+                    <div key={doc.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5">
+                      <div className={`grid size-10 shrink-0 place-items-center rounded-xl ${colorMap[docColor(i)]}`}>
+                        <FileText className="size-4 text-foreground/70" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{doc.originalName}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{doc.pageCount} pages · {formatDate(doc.createdAt)}</p>
+                      </div>
+                      <StatusBadge status={doc.status} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Recent questions */}
+            <section className="rounded-3xl border border-border bg-card p-5 md:p-6">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Recent questions</p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-tight">Research history</h2>
+                </div>
+                <button onClick={() => setActive('history')} className="rounded-xl p-2 hover:bg-secondary" aria-label="View history">
+                  <ArrowUpRight className="size-4" />
+                </button>
+              </div>
+              {recentQuestions.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <Sparkles className="size-8 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">No questions yet. Start a research chat.</p>
+                  <button onClick={() => setActive('chat')} className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
+                    Open chat
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {recentQuestions.map((q) => (
+                    <button key={q.id} onClick={() => setActive('chat')} className="flex items-start gap-3 text-left">
+                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-soft-blue text-primary">
+                        <Sparkles className="size-3.5" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{q.content}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{formatDate(q.createdAt)}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function Logo() {
   return (
     <div className="flex items-center gap-2.5">
