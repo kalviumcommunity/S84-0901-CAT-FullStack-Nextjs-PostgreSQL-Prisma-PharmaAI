@@ -360,3 +360,199 @@ function Header({
   )
 }
 
+
+// ─── Library panel ────────────────────────────────────────────────────────────
+
+function Library({ openViewer }: { openViewer: (doc: Document) => void }) {
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [filter, setFilter] = useState('All')
+  const [search, setSearch] = useState('')
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const dropRef = useRef<HTMLDivElement>(null)
+
+  const fetchDocs = useCallback(() => {
+    setLoading(true)
+    fetch('/api/documents')
+      .then((r) => r.json())
+      .then((d) => setDocuments(d.documents ?? []))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => { fetchDocs() }, [fetchDocs])
+
+  // Poll for processing documents
+  useEffect(() => {
+    const processing = documents.some((d) => d.status === 'PROCESSING')
+    if (!processing) return
+    const t = setTimeout(fetchDocs, 3000)
+    return () => clearTimeout(t)
+  }, [documents, fetchDocs])
+
+  async function handleUpload(file: File) {
+    if (file.type !== 'application/pdf') {
+      setUploadError('Only PDF files are accepted.')
+      return
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setUploadError('File size exceeds 20 MB.')
+      return
+    }
+
+    setUploadError('')
+    setUploading(true)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('/api/documents/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) {
+        setUploadError(data.error ?? 'Upload failed')
+        return
+      }
+      fetchDocs()
+    } catch {
+      setUploadError('Upload failed. Please try again.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setDeleting(id)
+    try {
+      await fetch(`/api/documents/${id}`, { method: 'DELETE' })
+      setDocuments((prev) => prev.filter((d) => d.id !== id))
+    } catch {
+      console.error('Delete failed')
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault()
+    const file = e.dataTransfer.files[0]
+    if (file) handleUpload(file)
+  }
+
+  const filtered = documents.filter((d) => {
+    const matchesSearch = d.originalName.toLowerCase().includes(search.toLowerCase())
+    return matchesSearch
+  })
+
+  return (
+    <div className="mx-auto flex max-w-[1400px] flex-col gap-6 p-5 md:p-8">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Knowledge base</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Research Library</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Your evidence, organized and ready to explore.</p>
+        </div>
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:-translate-y-0.5 transition-transform"
+        >
+          <Plus className="size-4" /> Add document
+        </button>
+      </div>
+
+      {/* Drop zone */}
+      <div
+        ref={dropRef}
+        onDrop={onDrop}
+        onDragOver={(e) => e.preventDefault()}
+        className="group rounded-3xl border border-dashed border-primary/40 bg-lavender-mist p-7 text-center transition-colors hover:bg-lavender/30 md:p-10"
+      >
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-card text-primary shadow-sm">
+          {uploading ? <Loader2 className="size-6 animate-spin" /> : <UploadCloud className="size-6" />}
+        </div>
+        <h2 className="mt-4 text-lg font-semibold">
+          {uploading ? 'Uploading…' : 'Drop research documents here'}
+        </h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+          PDFs up to 20 MB. Text is extracted, indexed, and made searchable.
+        </p>
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="mt-5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+        >
+          Browse files
+        </button>
+        {uploadError && (
+          <p className="mt-3 flex items-center justify-center gap-2 text-sm text-destructive">
+            <AlertCircle className="size-4" /> {uploadError}
+          </p>
+        )}
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <ShieldCheck className="size-3.5" /> Private and encrypted
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/pdf"
+          className="sr-only"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = '' }}
+        />
+      </div>
+
+      {/* Search */}
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5">
+        <Search className="size-4 shrink-0 text-muted-foreground" />
+        <input
+          aria-label="Search documents"
+          placeholder="Search documents…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+
+      {/* Document list */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="size-6 animate-spin text-primary" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <FolderOpen className="size-10 text-muted-foreground/30" />
+          <p className="text-muted-foreground">{documents.length === 0 ? 'No documents yet. Upload your first PDF.' : 'No documents match your search.'}</p>
+        </div>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {filtered.map((doc, i) => (
+            <div key={doc.id} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-all hover:border-primary/40 hover:shadow-md">
+              <button onClick={() => openViewer(doc)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                <div className={`grid size-11 shrink-0 place-items-center rounded-xl ${colorMap[docColor(i)]}`}>
+                  <FileText className="size-5 text-foreground/70" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{doc.originalName}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {doc.pageCount} pages · {formatBytes(doc.fileSize)} · {formatDate(doc.createdAt)}
+                  </p>
+                </div>
+                <StatusBadge status={doc.status} />
+              </button>
+              <button
+                onClick={() => handleDelete(doc.id)}
+                disabled={deleting === doc.id}
+                className="ml-1 shrink-0 rounded-lg p-2 text-muted-foreground opacity-0 transition-opacity hover:bg-secondary hover:text-destructive group-hover:opacity-100 disabled:opacity-50"
+                aria-label={`Delete ${doc.originalName}`}
+              >
+                {deleting === doc.id ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
