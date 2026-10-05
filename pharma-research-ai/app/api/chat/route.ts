@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { chat, type GeminiMessage } from '@/lib/gemini'
+import { generateChatResponse, type ChatMessage } from '@/lib/chat'
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     // Load existing conversation history so the AI remembers context
     let convId: string = conversationId ?? ''
-    let history: GeminiMessage[] = []
+    let history: ChatMessage[] = []
 
     if (convId) {
       const existing = await prisma.conversation.findUnique({
@@ -33,22 +33,22 @@ export async function POST(req: NextRequest) {
       // Only use this conversation if it belongs to the current user
       if (existing && existing.userId === session.userId) {
         history = existing.messages.map((m) => ({
-          role: m.role === 'USER' ? 'user' : 'model',
-          parts: [{ text: m.content }],
+          role: m.role === 'USER' ? ('user' as const) : ('assistant' as const),
+          content: m.content,
         }))
       } else {
         convId = ''
       }
     }
 
-    // Call Gemini
+    // Call AI provider (Groq / Gemini fallback)
     let answer: string
     try {
-      answer = await chat(history, trimmed)
+      answer = await generateChatResponse(history, trimmed)
     } catch (err) {
-      console.error('[chat] Gemini error:', err)
+      console.error('[chat] AI service error:', err)
       return NextResponse.json(
-        { error: 'AI service unavailable. Please try again.' },
+        { error: 'AI service unavailable. Please check your API keys.' },
         { status: 502 }
       )
     }
