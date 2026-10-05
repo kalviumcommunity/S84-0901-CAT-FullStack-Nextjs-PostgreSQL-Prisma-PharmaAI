@@ -1,17 +1,129 @@
-import { Suspense } from 'react';
-import AuthForm from '@/components/auth-form';
+'use client'
 
-export const metadata = {
-  title: 'Sign In | PharmaResearch AI',
-  description: 'Access the evidence workspace and clinical intelligence dashboard.',
-};
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { Activity, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error ?? 'Login failed')
+        return
+      }
+
+      router.push('/dashboard')
+      router.refresh()
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <main className="min-h-screen w-full bg-[#f7f8f5] flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <Suspense fallback={<div className="text-xs text-[#52605a]">Loading sign in...</div>}>
-        <AuthForm initialMode="login" />
-      </Suspense>
+    <main className="grid min-h-screen place-items-center bg-background p-5">
+      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-lg">
+        <div className="flex items-center gap-2.5 mb-6">
+          <div className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+            <Activity className="size-5" />
+          </div>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">PharmaResearch AI</p>
+        </div>
+
+        <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Your research workspace is ready when you are.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="text-xs font-medium text-foreground">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              className="rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="password" className="text-xs font-medium text-foreground">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-60 hover:-translate-y-0.5 transition-transform"
+          >
+            {loading ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          New to PharmaResearch AI?{' '}
+          <Link href="/signup" className="font-semibold text-primary hover:underline">
+            Create an account
+          </Link>
+        </p>
+
+        <p className="mt-6 text-center text-[10px] leading-5 text-muted-foreground">
+          PharmaResearch AI provides document-grounded research assistance and does not replace
+          professional medical, clinical, regulatory, or scientific judgment.
+        </p>
+      </div>
     </main>
-  );
+  )
 }

@@ -1,10 +1,14 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required')
+function getSecret(): Uint8Array {
+  const JWT_SECRET = process.env.JWT_SECRET
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is not set.')
+  }
+  return new TextEncoder().encode(JWT_SECRET)
+}
 
-const secret = new TextEncoder().encode(JWT_SECRET)
 const COOKIE_NAME = 'pharma_token'
 const TOKEN_TTL = '7d'
 
@@ -18,12 +22,12 @@ export async function signToken(payload: JWTPayload): Promise<string> {
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(TOKEN_TTL)
-    .sign(secret)
+    .sign(getSecret())
 }
 
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, secret)
+    const { payload } = await jwtVerify(token, getSecret())
     return payload as unknown as JWTPayload
   } catch {
     return null

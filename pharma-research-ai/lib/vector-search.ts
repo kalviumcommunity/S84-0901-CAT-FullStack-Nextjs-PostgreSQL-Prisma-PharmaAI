@@ -28,14 +28,37 @@ export async function searchChunks(
   const embedding = await generateEmbedding(query)
   const embeddingStr = `[${embedding.join(',')}]`
 
-  // Build the WHERE clause
-  let whereClause = `dc."userId" = '${userId}'`
+  // Build the WHERE clause with parameterized userId and documentIds.
+  // The embedding vector literal is safe — it's built from numbers we generate,
+  // never from user input.  userId comes from the verified JWT session.
+  // documentIds are validated by ownership via the userId check below.
+  let whereClause = `dc."userId" = $1`
+  const params: unknown[] = [userId, embeddingStr, topK]
+
   if (documentIds && documentIds.length > 0) {
-    const ids = documentIds.map((id) => `'${id}'`).join(',')
-    whereClause += ` AND dc."documentId" IN (${ids})`
+    // Cast each id to TEXT and pass as a proper array parameter
+    whereClause += ` AND dc."documentId" = ANY($4::text[])`
+    params.push(documentIds)
   }
 
-  // Raw SQL for pgvector cosine distance search
+  // Raw SQL for pgvector cosine distance search.
+  // $1 = userId, $2 = embeddingStr (vector literal), $3 = topK, $4 = documentIds (optional)
+  const sql = `
+    SELECT
+      dc.id,
+      dc."documentId",
+      d."originalName" AS "documentName",
+      dc."pageNumber",
+      dc.content,
+      1 - (dc.embedding <=> $2::vector) AS similarity
+    FROM document_chunks dc
+    JOIN documents d ON d.id = dc."documentId"
+    WHERE ${whereClause}
+      AND dc.embedding IS NOT NULL
+    ORDER BY dc.embedding <=> $2::vector
+    LIMIT $3
+  `
+
   const results = await prisma.$queryRawUnsafe<
     Array<{
       id: string
@@ -45,31 +68,21 @@ export async function searchChunks(
       content: string
       similarity: number
     }>
-  >(`
-    SELECT
-      dc.id,
-      dc."documentId",
-      d."originalName" AS "documentName",
-      dc."pageNumber",
-      dc.content,
-      1 - (dc.embedding <=> '${embeddingStr}'::vector) AS similarity
-    FROM document_chunks dc
-    JOIN documents d ON d.id = dc."documentId"
-    WHERE ${whereClause}
-      AND dc.embedding IS NOT NULL
-    ORDER BY dc.embedding <=> '${embeddingStr}'::vector
-    LIMIT ${topK}
-  `)
+  >(sql, ...params)
 
   return results
 }
 
 /**
- * Store a chunk's embedding in the database using a raw SQL update.
+ * Store a chunk's embedding in the database using a parameterized raw SQL update.
  */
 export async function storeEmbedding(chunkId: string, embedding: number[]): Promise<void> {
   const embeddingStr = `[${embedding.join(',')}]`
+  // $1 = embedding vector literal (built from numbers we generate, not user input)
+  // $2 = chunkId from our own DB record
   await prisma.$executeRawUnsafe(
-    `UPDATE document_chunks SET embedding = '${embeddingStr}'::vector WHERE id = '${chunkId}'`
+    `UPDATE document_chunks SET embedding = $1::vector WHERE id = $2`,
+    embeddingStr,
+    chunkId
   )
 }

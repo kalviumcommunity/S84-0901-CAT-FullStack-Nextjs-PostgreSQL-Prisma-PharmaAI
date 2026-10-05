@@ -1,22 +1,26 @@
-import { NextResponse } from 'next/server';
-import { addDocument, listDocuments } from '@/lib/store';
+import { NextResponse } from 'next/server'
+import { getSession } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  return NextResponse.json({ documents: listDocuments() });
-}
-
-export async function POST(request: Request) {
-  try {
-    const form = await request.formData();
-    const file = form.get('file');
-    if (!(file instanceof File) || file.type !== 'application/pdf') {
-      return NextResponse.json({ error: 'Please upload a PDF file.' }, { status: 400 });
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'PDFs must be smaller than 10 MB.' }, { status: 400 });
-    }
-    return NextResponse.json({ document: addDocument(file.name, file.size) }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: 'Failed to process document upload.' }, { status: 500 });
+  const session = await getSession()
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const documents = await prisma.document.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      originalName: true,
+      pageCount: true,
+      chunkCount: true,
+      status: true,
+      fileSize: true,
+      createdAt: true,
+    },
+  })
+
+  return NextResponse.json({ documents })
 }

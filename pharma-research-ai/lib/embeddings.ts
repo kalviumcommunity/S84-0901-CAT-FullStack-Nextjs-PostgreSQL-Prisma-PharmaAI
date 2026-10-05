@@ -1,44 +1,50 @@
 /**
- * Embeddings using Groq's available text embedding via the API.
- * We use the Groq API with the 'nomic-embed-text-v1.5' model for embeddings.
- * Dimensions: 768
+ * Embeddings via Google Gemini API — gemini-embedding-001
  *
- * Note: Update the vector dimension in migration.sql if changing model.
- * nomic-embed-text-v1.5 => 768 dims
+ * - Free tier on Google AI Studio: https://aistudio.google.com/apikey
+ * - Output dimensions: 3072
+ * - Uses X-goog-api-key header
+ *
+ * Set GEMINI_API_KEY in .env.local
  */
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY
-const EMBED_MODEL = 'nomic-embed-text-v1.5'
-const EMBED_DIMS = 768
+const EMBED_MODEL = 'gemini-embedding-001'
+const EMBED_DIMS = 3072
+const MAX_CHARS = 8000
 
 export const EMBEDDING_DIMENSIONS = EMBED_DIMS
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-  if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY is required')
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not set in environment variables.')
 
-  const response = await fetch('https://api.groq.com/openai/v1/embeddings', {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${EMBED_MODEL}:embedContent`
+
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${GROQ_API_KEY}`,
+      'X-goog-api-key': apiKey,
     },
     body: JSON.stringify({
-      model: EMBED_MODEL,
-      input: text.slice(0, 8000), // Groq embedding token limit
+      model: `models/${EMBED_MODEL}`,
+      content: {
+        parts: [{ text: text.slice(0, MAX_CHARS) }],
+      },
     }),
   })
 
   if (!response.ok) {
     const error = await response.text()
-    throw new Error(`Groq embedding error: ${response.status} — ${error}`)
+    throw new Error(`Gemini embedding error: ${response.status} — ${error}`)
   }
 
   const data = await response.json()
-  return data.data[0].embedding as number[]
+  return data.embedding.values as number[]
 }
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-  // Process in batches of 10 to avoid rate limits
+  // Process in batches of 10 to stay within rate limits
   const BATCH_SIZE = 10
   const results: number[][] = []
 
@@ -47,7 +53,7 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
     const embeddings = await Promise.all(batch.map(generateEmbedding))
     results.push(...embeddings)
 
-    // Small delay between batches
+    // Small delay between batches to avoid 429s
     if (i + BATCH_SIZE < texts.length) {
       await new Promise((r) => setTimeout(r, 200))
     }

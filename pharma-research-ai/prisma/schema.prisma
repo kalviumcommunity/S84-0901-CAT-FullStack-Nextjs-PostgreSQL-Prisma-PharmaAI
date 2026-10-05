@@ -21,3 +21,82 @@ model User {
 
   @@map("users")
 }
+
+model Document {
+  id          String          @id @default(cuid())
+  userId      String
+  filename    String
+  originalName String
+  pageCount   Int             @default(0)
+  chunkCount  Int             @default(0)
+  status      DocumentStatus  @default(PROCESSING)
+  fileSize    Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks      DocumentChunk[]
+
+  @@map("documents")
+}
+
+enum DocumentStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  userId     String
+  pageNumber Int
+  content    String
+  // embedding stored as raw vector string; pgvector column managed via raw SQL migration
+  createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([userId])
+  @@map("document_chunks")
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           MessageRole
+  content        String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  citations      Citation[]
+
+  @@map("messages")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+model Citation {
+  id           String  @id @default(cuid())
+  messageId    String
+  documentName String
+  pageNumber   Int
+  passage      String
+  similarity   Float?
+  message      Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@map("citations")
+}
