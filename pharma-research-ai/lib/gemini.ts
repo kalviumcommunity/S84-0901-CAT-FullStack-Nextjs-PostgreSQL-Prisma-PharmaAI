@@ -3,7 +3,7 @@
  * Uses gemini-2.0-flash via the generativelanguage REST API.
  */
 
-const MODEL = 'gemini-2.0-flash'
+const MODEL = 'gemini-3.8-flash'
 
 const SYSTEM_INSTRUCTION =
   'You are PharmaResearch AI, a helpful assistant for pharmaceutical researchers. ' +
